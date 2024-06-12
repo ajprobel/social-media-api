@@ -18,7 +18,7 @@ module.exports = {
         .populate('thoughts', 'friends');
 
       if (!user) {
-        return res.status(400).json({ message: 'No user found with that ID' })
+        return res.status(400).json({ message: "No user found with that ID" })
       }
 
       res.json(user)
@@ -41,11 +41,13 @@ module.exports = {
   // updateUser
   async updateUser(req, res) {
     try {
-      // filter is the "where"
-      const filter = '';
-      // update is the "thing to update"
-      const update = '';
-      const result = await User.findOneandUpdate(filter, update);
+      // filter is the "where", update is the "thing to update"
+      const filter = { _id: req.params.id };
+      const update = req.body;
+      const result = await User.findOneandUpdate(filter, update, { new: true, runValidators: true });
+      if (!result) {
+        res.status(400).json({message: "sorry, no user found with that ID"})
+      }
       res.status(200).json(result);
       // update based on id
     } catch (err) {
@@ -58,7 +60,7 @@ module.exports = {
     try {
       const user = await User.findOneAndDelete({ _id: req.params.userId });
       if(!user) {
-        res.status(400).json({message: 'No user found with that ID'})
+        res.status(400).json({message: "No user found with that ID"})
       }
       res.status(200).json(user);
     } catch (err) {
@@ -66,11 +68,21 @@ module.exports = {
     }
   },
 
+
+  // /:userId/friends/:friendId
   // add new friend
   async addFriend(req, res) {
     try {
-      // we have two parameters, :userId and :friendId
-      // add :friendId to :userId's friend list
+      const newFriend = req.params.friendId;
+      const result = await User.findOneandUpdate(
+        { _id: req.params.userId},
+        { $addToSet: {friends: newFriend}},
+        { new: true, runValidators: true }
+      )
+      if (!result) {
+        res.status(400).json({ message: "error with user ID or friend ID"})
+      }
+      res.status(200).json(result);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -79,8 +91,16 @@ module.exports = {
   // delete friend
   async removeFriend(req, res) {
     try {
-      // we have two parameters, :userId and :friendId
-      // add :friendId to :userId's friend list
+      const exFriend = req.params.friendId;
+      const result = await User.findOneandUpdate(
+        { _id: req.params.userId},
+        { $pull: exFriend},
+        { new: true }
+      )
+      if (!result) {
+        res.status(400).json({ message: "error with user ID or ex-friend ID"})
+      }
+      res.status(200).json(result);
     } catch (err) {
       res.status(500).json(err);
     }

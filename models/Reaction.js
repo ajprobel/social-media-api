@@ -1,15 +1,15 @@
-const mongoose = require('mongoose');
+const { Schema, Types } = require('mongoose');
 
-const reactionSchema = new mongoose.Schema(
+const reactionSchema = new Schema(
   {
     reactionId: {
-      // user Mongoose ObjectId data type
-      // default value is set to a new ObjectId
+      type: Schema.Types.ObjectId,
+      default: () => new Types.ObjectId(), 
     },
     reactionBody: {
       type: String,
       required: true,
-      // 280 char maximum
+      max: 280
     },
     username: {
       type: String,
@@ -17,11 +17,20 @@ const reactionSchema = new mongoose.Schema(
     },
     createdAt: {
       type: Date,
-      // default value to current timestamp
-      // getter method to format timestamp on query
+      default: Date.now,
+      // get: formatDate
+    }
+  },
+  {
+    toJSON: {
+      getters: true,
     }
   }
 );
+
+// function formatDate(date) {
+
+// }
 
 // just exporting schema for use as subdoc in 'Thought' model
 module.exports = reactionSchema;

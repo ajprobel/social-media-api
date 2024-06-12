@@ -1,36 +1,42 @@
-const mongoose = require('mongoose');
+const { Schema, model }  = require('mongoose');
+const reactionSchema = require('./Reaction');
 
-const thoughtSchema = new mongoose.Schema(
+const thoughtSchema = new Schema(
   {
     thoughtText: {
       type: String,
       required: true,
-      // length between 1-280 char
+      max: 280
     },
     createdAt: {
       type: Date,
-      // set default to current timestamp
-      // use getter method to format the timestamp on query
+      default: Date.now,
+      // get: formatDate
     },
     username: {
       type: String,
       required: true,
     },
-    reactions: {
-      // array of nested documents created with 'reactionSchema'
-    }
+    reactions: [
+      reactionSchema
+    ]
   },
   {
-    virtual: {
-      toJSON: true,
+    toJSON: {
+      virtuals: true,
+      getters: true,
     }
   }
 );
 
-thoughtSchema.vritual('reactionCount').get(function() {
+// function formatDate(date) {
+
+// }
+
+thoughtSchema.virtual('reactionCount').get(function() {
   return this.reactions.length;
 })
 
-const Thought = mongoose.model('Thought', thoughtSchema);
+const Thought = model('Thought', thoughtSchema);
 
 module.exports = Thought;
