@@ -5,6 +5,7 @@ module.exports = {
   async getUsers(req, res) {
     try {
       const users = await User.find();
+      // .populate('thoughts');
       res.json(users);
     } catch (err) {
       res.status(500).json(err);
@@ -14,8 +15,8 @@ module.exports = {
   // getOneUser
   async getOneUser(req, res) {
     try {
-      const user = await User.findOne({ _id: req.params.userId })
-        .populate('thoughts', 'friends');
+      const user = await User.findOne({ _id: req.params.userId });
+        // .populate('thoughts', 'friends');
 
       if (!user) {
         return res.status(400).json({ message: "No user found with that ID" })
@@ -42,9 +43,9 @@ module.exports = {
   async updateUser(req, res) {
     try {
       // filter is the "where", update is the "thing to update"
-      const filter = { _id: req.params.id };
+      const filter = { _id: req.params.userId };
       const update = req.body;
-      const result = await User.findOneandUpdate(filter, update, { new: true, runValidators: true });
+      const result = await User.findOneAndUpdate(filter, update, { new: true, runValidators: true });
       if (!result) {
         res.status(400).json({message: "sorry, no user found with that ID"})
       }
@@ -74,7 +75,7 @@ module.exports = {
   async addFriend(req, res) {
     try {
       const newFriend = req.params.friendId;
-      const result = await User.findOneandUpdate(
+      const result = await User.findOneAndUpdate(
         { _id: req.params.userId},
         { $addToSet: {friends: newFriend}},
         { new: true, runValidators: true }
@@ -92,9 +93,9 @@ module.exports = {
   async removeFriend(req, res) {
     try {
       const exFriend = req.params.friendId;
-      const result = await User.findOneandUpdate(
+      const result = await User.findOneAndUpdate(
         { _id: req.params.userId},
-        { $pull: exFriend},
+        { $pull: { friends: exFriend} },
         { new: true }
       )
       if (!result) {

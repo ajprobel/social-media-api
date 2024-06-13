@@ -12,10 +12,10 @@ module.exports = {
     },
     async createThought(req, res) {
         try {
-            const newThought = await Thought.create(req.body);
-            const result = await User.findOneandUpdate(
+            const newThought = await Thought.create(req.body)
+            const result = await User.findOneAndUpdate(
                 { _id: req.body.userId },
-                { $addToSet: { thoughts: newThought }},
+                { $addToSet: { thoughts: newThought._id }},
                 { new: true }
             )
             if (!result) {
@@ -28,7 +28,7 @@ module.exports = {
     },
     async getOneThought(req, res) {
         try {
-            const oneThought = await Thought.findOne({ _id: req.params.userId })
+            const oneThought = await Thought.findOne({ _id: req.params.thoughtId })
                 .populate('reactions');
             if (!oneThought) {
                 return res.status(400).json({ message: 'No thought found with that ID' });
@@ -42,7 +42,7 @@ module.exports = {
         try {
             const filter = { _id: req.params.thoughtId };
             const update = req.body;
-            const result = await Thought.findOneandUpdate(filter, update, { new: true, runValidators: true });
+            const result = await Thought.findOneAndUpdate(filter, update, { new: true, runValidators: true });
             if (!result) {
               res.status(400).json({message: "sorry, no thought found with that ID"})
             }
@@ -65,21 +65,26 @@ module.exports = {
     async newReaction(req, res) {
         try {
             const newReaction = req.body
-            await Thought.findOneandUpdate(
+            const result = await Thought.findOneAndUpdate(
                 { _id: req.params.thoughtId },
                 { $addToSet:  { reactions: newReaction } },
                 { new: true }
             )
+            if (!result) {
+                res.status(400).json({message: "error adding reaction to that ID"});
+            }
+            res.status(200).json(result);
         } catch (err) {
             res.status(500).json(err);
         }
     },
     async removeReaction(req, res) {
         try {
-            const result = await Thought.findOneandUpdate(
+            const exThought = req.params.reactionId;
+            const result = await Thought.findOneAndUpdate(
                 { _id: req.params.thoughtId },
-                { $pull: { reactions: {reactionId: req.params.reactionId } } },
-                { new: true }
+                { $pull: { reactions: { reactionId: exThought } } },
+                { runValidators: true, new: true }
             )
             if (!result) {
                 res.status(400).json({ message: "error with provided thought ID or reaction ID"})
