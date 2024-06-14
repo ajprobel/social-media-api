@@ -53,11 +53,20 @@ module.exports = {
     },
     async deleteThought(req, res) {
         try {
-            const thought = await Thought.findOneAndDelete({ _id: req.params.thoughtId });
+            const id = req.params.thoughtId
+            const thought = await Thought.findOneAndDelete({ _id: id }, { new: true });
+            const updateUser = await User.findOneAndUpdate(
+                { thoughts: id },
+                { $pull: { thoughts: id } },
+                { new: true }
+            )
             if(!thought) {
               res.status(400).json({message: "No user found with that ID"})
+            } else {
+                res.status(200).json(thought);
+                updateUser;
             }
-            res.status(200).json(thought);
+            
         } catch (err) {
             res.status(500).json(err);
         }
