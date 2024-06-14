@@ -11,7 +11,7 @@ const thoughtSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      // get: formatDate
+      // get: date => date.format('YYYY-MM-DD')
     },
     username: {
       type: String,
@@ -29,9 +29,6 @@ const thoughtSchema = new Schema(
   }
 );
 
-// function formatDate(date) {
-
-// }
 
 thoughtSchema.virtual('reactionCount').get(function() {
   return this.reactions.length;

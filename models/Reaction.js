@@ -18,7 +18,7 @@ const reactionSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now,
-      // get: formatDate
+      // get: date => date.toLocaleDateString()
     }
   },
   {
@@ -28,9 +28,6 @@ const reactionSchema = new Schema(
   }
 );
 
-// function formatDate(date) {
-
-// }
 
 // just exporting schema for use as subdoc in 'Thought' model
 module.exports = reactionSchema;
